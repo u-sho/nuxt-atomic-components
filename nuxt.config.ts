@@ -21,9 +21,7 @@ const nuxtConfig: Configuration = {
     '@nuxt/typescript-build',
     '@nuxtjs/eslint-module',
     '@nuxtjs/stylelint-module'
-  ],
-  modules: ['@nuxtjs/axios'],
-  axios: { https: true }
+  ]
 }
 
 export default nuxtConfig

@@ -21,7 +21,7 @@
 
 <script>
 export default {
-  components: { Logo: () => import('@/components/Logo') }
+  components: { Logo: () => import('@/components/atoms/Logo') }
 }
 </script>
 

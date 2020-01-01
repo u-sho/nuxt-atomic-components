@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  install-dependencies:
+    docker:
+      - image: circleci/node:12.14
+    working_directory: ~/
+    steps:
+      - checkout
+      - restore_cache:
+          key: install-dependencies-{{ .Branch }}-{{ checksum "yarn.lock" }}
+      - run: yarn
+      - save_cache:
+          paths:
+            - node_modules
+          key: install-dependencies-{{ .Branch }}-{{ checksum "yarn.lock" }}
+      - run: yarn build

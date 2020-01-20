@@ -63,8 +63,10 @@ jobs:
             - packages-v1-{{ .Branch }}-
             - packages-v1-
       - run: yarn
-      - run: yarn test
+      - run: yarn test --collectCoverage=true
       - store_test_results:
+          path: coverage/clover.xml
+      - store_artifacts:
           path: coverage
 
   build:

@@ -1,0 +1,128 @@
+version: 2
+jobs:
+  install-dependencies:
+    docker:
+      - image: circleci/node:12.14
+    steps:
+      # source-caching https://circleci.com/docs/2.0/caching/#source-caching
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: source-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
+
+      # node-caching https://circleci.com/docs/2.0/caching/#yarn-node
+      - restore_cache:
+          keys:
+            - packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - packages-v1-{{ .Branch }}-
+            - packages-v1-
+      - run: yarn
+      - save_cache:
+          paths:
+            - ~/.cache/yarn
+          key: packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+
+  lint:
+    docker:
+      - image: circleci/node:12.14
+    steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - restore_cache:
+          keys:
+            - packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - packages-v1-{{ .Branch }}-
+            - packages-v1-
+      - run: yarn
+      - run: yarn lint
+      - run: yarn slint
+
+  test:
+    docker:
+      - image: circleci/node:12.14
+    steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - restore_cache:
+          keys:
+            - packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - packages-v1-{{ .Branch }}-
+            - packages-v1-
+      - run: yarn
+      - run: yarn test --collectCoverage=true
+      - store_test_results:
+          path: coverage/clover.xml
+      - store_artifacts:
+          path: coverage
+
+  build:
+    docker:
+      - image: circleci/node:12.14
+    steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - restore_cache:
+          keys:
+            - packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - packages-v1-{{ .Branch }}-
+            - packages-v1-
+      - run: yarn
+      - run: yarn build
+
+  generate:
+    docker:
+      - image: circleci/node:12.14
+    steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - restore_cache:
+          keys:
+            - packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - packages-v1-{{ .Branch }}-
+            - packages-v1-
+      - run: yarn
+      - run: yarn generate
+
+
+# https://circleci.com/docs/2.0/workflows/
+workflows:
+  version: 2
+  test-and-build:
+    jobs:
+      - install-dependencies
+      - lint:
+          requires:
+            - install-dependencies
+      - test:
+          requires:
+            - install-dependencies
+      - build:
+          requires:
+            - lint
+            - test
+      - generate:
+          requires:
+            - lint
+            - test

@@ -4,7 +4,7 @@ module.exports = {
     browser: true,
     node: true
   },
-  ignorePatterns: ['!.eslintrc.js'],
+  ignorePatterns: ['!.eslintrc.js', 'static/sw.js'],
   extends: [
     '@nuxtjs/eslint-config-typescript',
     'prettier/vue',
